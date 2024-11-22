@@ -1,0 +1,240 @@
+---
+layout: 啥
+title:  "教育平台、八桂先锋小程序 获取地市信息方案"
+date:   2024-11-22 21:06:02 +0800
+categories: lgs add
+---
+### 背景
+
+由于目前教育平台、八桂先锋小程序上传埋点数据时使用的获取ip与地市信息的方法是通过第三方接口 https://app.ipdatacloud.com/v1/ip_self_search，但接口获取的信息并不准确，导致数据统计分析平台出现了如下场景：
+
+![img](https://avhcgd2l4km.feishu.cn/space/api/box/stream/download/asynccode/?code=MTEyYmE4Mzk3YjExODc1Y2FjZWY4YTAwNWFjMDFiYzRfVzhJZ0NOUWVBaFZRRThRUjdVY2p2bjZnRThYeEduOFdfVG9rZW46WjhLZmJwQXFGb1FhY3J4UFJod2NleHhubnloXzE3MzIyODA4Mzk6MTczMjI4NDQzOV9WNA)
+
+![img](https://avhcgd2l4km.feishu.cn/space/api/box/stream/download/asynccode/?code=MDJhZmNhYmRkNmY4N2FjMGY1YmE4ZjVmNmU0ZTUyYzRfUTFNN2x2VXJnZFZGM1RzaklFcFdGRDhVY3k1S2NueE9fVG9rZW46RXFTVmJRQmlhb2xwZXF4c1ZXWWN3UHZ3bkxmXzE3MzIyODA4Mzk6MTczMjI4NDQzOV9WNA)
+
+### 修复方案
+
+#### 修数
+
+1. 对于历史数据，将非中国、非广西、非广州的数据的地市信息统一修改为南宁市
+
+#### 调整地市信息获取逻辑，在数据统计分析平台进行地区信息填充
+
+1. 获取当前ip，提供接口根据ip获取地市信息
+   1. 通过第三方接口https://ipinfo.io/json获取当前 ip ，若该接口失效，通过以下方式获取
+   2. nginx添加配置
+   3. ```Nginx
+      proxy_set_header X-Real-IP $remote_addr;
+      proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+      ```
+
+   4. 后端通过以下方式获取当前ip
+   5. ```Java
+      /**
+       * 获取ip地址
+       *
+       * @param request request对象
+       * @return 返回对应IP地址
+       */
+      public static String getIpAddress(HttpServletRequest request) {
+          log.debug("getIpAddress request: {}", request);
+          String ipAddress = null;
+          try {
+              ipAddress = request.getHeader("X-Forwarded-For");
+              if (ipAddress != null && ipAddress.length() != 0 && !"unknown".equalsIgnoreCase(ipAddress)) {
+                  // 多次反向代理后会有多个ip值，第一个ip才是真实ip
+                  if (ipAddress.contains(",")) {
+                      ipAddress = ipAddress.split(",")[0];
+                  }
+              }
+              if (ipAddress == null || ipAddress.length() == 0 || "unknown".equalsIgnoreCase(ipAddress)) {
+                  ipAddress = request.getHeader("X-Real-IP");
+              }
+              if (ipAddress == null || ipAddress.length() == 0 || "unknown".equalsIgnoreCase(ipAddress)) {
+                  ipAddress = request.getHeader("Proxy-Client-IP");
+              }
+              if (ipAddress == null || ipAddress.length() == 0 || "unknown".equalsIgnoreCase(ipAddress)) {
+                  ipAddress = request.getHeader("WL-Proxy-Client-IP");
+              }
+              if (ipAddress == null || ipAddress.length() == 0 || "unknown".equalsIgnoreCase(ipAddress)) {
+                  ipAddress = request.getHeader("HTTP_CLIENT_IP");
+              }
+              if (ipAddress == null || ipAddress.length() == 0 || "unknown".equalsIgnoreCase(ipAddress)) {
+                  ipAddress = request.getRemoteAddr();
+              }
+          } catch (Exception e) {
+              log.error("IPUtils ERROR ", e);
+          }
+          return ipAddress;
+      }
+      ```
+
+   6. 参考 https://github.com/lionsoul2014/ip2region/tree/master/binding/java，获取ip与地区信息的xdb文件
+      1. ```Markdown
+         ip2region xdb java 生成实现
+         编译安装
+         通过 maven 来编译可运行 jar 程序：
+         # cd 到 maker/java 根目录
+         mvn clean compile package
+         然会会在当前目录的 target 目录下得到一个 ip2region-maker-{version}.jar 的打包文件。
+         数据生成
+         通过 java -jar ip2region-maker-{version}.jar 来生成 ip2region.xdb 二进制文件：
+         ➜  java git:(java_xdb_maker) ✗ java -jar ./target/ip2region-maker-1.0.0.jar ip2region xdb makerjava -jar ip2region-maker-{version}.jar [command options]options: --src string    source ip text file path --dst string    destination binary xdb file path
+         例如，通过默认的 data/ip.merge.txt 原数据，在当前目录生成一个 ip2region.xdb 二进制文件：
+         ➜  java git:(java_xdb_maker) ✗ java -jar ./target/ip2region-maker-1.0.0.jar --src=../../data/ip.merge.txt --dst=./ip2region.xdb# 会看到一堆输出，最终会看到如下输出表示运行成功...2022-07-15 20:21:29 INFO  org.lionsoul.ip2region.xdb.Maker try to write the vector index block ...2022-07-15 20:21:29 INFO  org.lionsoul.ip2region.xdb.Maker try to write the segment index ptr ...2022-07-15 20:21:29 INFO  org.lionsoul.ip2region.xdb.Maker write done, dataBlocks: 13804, indexBlocks: (683591, 720221), indexPtr: (982904, 11065984)2022-07-15 20:21:29 INFO  org.lionsoul.ip2region.MakerTest Done, elapsed: 50 s
+         数据 查询/bench 测试
+         已经完成开发的 binding 都有查询和 bench 测试程序以及使用文档，你可以使用你熟悉的语言的 searcher 进行查询测试或者bench测试，来确认数据的正确性和完整性。
+         ```
+
+### 进阶修复方案
+
+1. 上述方案为保底方案，因为ip地区数据是通过xdb文件离线提供且不更新的，后续在现实情况允许的情况下，可采取以下方案
+
+##### 浏览器端
+
+1. 通过html的 ***navigator***.geolocation 获取当前经纬度；（需要用户在页面进行授权）
+2. 根据经纬席调用第三方api获取地市信息（如百度api，但每日有限制次数）
+3. 教育平台前端可根据以下方式实现
+   1. ```JavaScript
+      // education-web-v2/utils/location.ts
+      // 定义地市信息的类型
+      interface AddressComponents {
+          province: string;
+          city: string;
+      }
+      
+      // 获取当前地理位置的函数
+      export function getCurrentPosition(): Promise<GeolocationPosition> {
+          return new Promise((resolve, reject) => {
+              if (navigator.geolocation) {
+                  navigator.geolocation.getCurrentPosition(resolve, reject);
+              } else {
+                  reject(new Error('Geolocation is not supported by this browser.'));
+              }
+          });
+      }
+      
+      export function loadBaiduApi() {
+          return new Promise(function (resolve, reject) {
+              // 在函数开始时处理 module 开关
+              if (typeof module === 'object') {
+                  window.module = module;
+                  module = undefined;
+              }
+      
+              window.init = function () {
+                  resolve(BMapGL);
+              };
+      
+              const baiduAk = useRuntimeConfig().public.baiduAk
+              const script = document.createElement('script');
+              script.type = 'text/javascript';
+              script.src = `https://api.map.baidu.com/api?v=1.0&type=webgl&ak=${baiduAk}&callback=init`;
+              script.onerror = reject;
+              document.head.appendChild(script);
+      
+              // 在函数结束时还原 module
+              script.onload = function () {
+                  if (window.module) module = window.module;
+              };
+          });
+      }
+      
+      // 使用百度API获取位置信息的封装函数
+      export async function getLocationByCoords(BMapGL, lat, lng): Promise<AddressComponents | null> {
+          return new Promise((resolve, reject) => {
+              const geoc = new BMapGL.Geocoder();
+              const point = new BMapGL.Point(lng, lat);
+      
+              geoc.getLocation(point, (rs) => {
+                  console.log("rs", rs.addressComponents);
+                  const addComp = rs.addressComponents;
+                  if (rs && rs.addressComponents) {
+                      resolve(rs.addressComponents);
+                  } else {
+                      reject(new Error('Failed to retrieve address components.'));
+                  }
+              });
+          });
+      }
+      ```
+
+   2. ```JavaScript
+      // education-web-v2/app.vue
+      <template>
+        <div>
+          <NuxtLoadingIndicator color="#ed2027" :height="4" />
+          <NuxtLayout>
+            <NuxtPage />
+          </NuxtLayout>
+        </div>
+      </template>
+      
+      <script lang="ts" setup>
+      import { getCurrentPosition, getLocationByCoords, loadBaiduApi } from './utils/location';
+      
+      onMounted(async () => {
+        const nuxtApp = useNuxtApp();
+        // 设置 NuxtApp 的基础信息
+        nuxtApp.$tracker.setBasicInfo({
+          // 项目名
+          projectName: '教育平台',
+          // 应用id
+          appId: 'dfb1f2173e4114898f88d1ea12ef13d3',
+          // 应用名称
+          appName: '教育平台',
+          // 应用版本
+          appVersion: 'V1.0.0',
+        })
+        nuxtApp.$tracker.pageCollect()
+      
+        try {
+          // 获取用户的当前位置
+          const { coords } = await getCurrentPosition();
+          console.log("coords: ", coords.latitude, coords.longitude);
+      
+          // 加载百度API
+          const BMapGL = await loadBaiduApi();
+      
+          // 调用百度API获取地区信息
+          try {
+            const locationInfo = await getLocationByCoords(BMapGL, coords.latitude, coords.longitude);
+            if (locationInfo) {
+              const { province, city } = locationInfo;
+              nuxtApp.$tracker.setRegionInfo({
+                province: province,
+                city: city,
+              })
+            } else {
+              console.log('Location info is null.');
+            }
+          } catch (error) {
+            console.error('根据坐标获取地区失败:', error);
+          }
+        } catch (error) {
+          console.error('浏览器获取定位或加载BMapGL失败:', error);
+        }
+      });
+      
+      
+      </script>
+      
+      <style>
+      .page-enter-active,
+      .page-leave-active {
+        transition: all 0.4s;
+      }
+      .page-enter-from,
+      .page-leave-to {
+        opacity: 0;
+        filter: blur(1rem);
+      }
+      </style>
+      ```
+
+#### 小程序端
+
+1. 申请腾讯位置服务，获取key值 https://lbs.qq.com/miniProgram/jsSdk/jsSdkGuide/jsSdkOverview
+2. 小程序开通位置获取接口 wx.getLocation，需要小程序满足条件才可开通该接口使用
+3. 调用腾讯位置服务提供的逆地址解析接口（有配额限制），https://lbs.qq.com/miniProgram/jsSdk/jsSdkGuide/methodReverseGeocoder
+4. 修改 小程序埋点sdk位置获取逻辑
