@@ -1,3 +1,10 @@
+---
+layout: default
+title:  "搭建skywalking"
+date:   2024-11-28 10:45:02 +0800
+categories: jekyll update
+---
+
 ## skywalking安装包
 
 SkyWalking OAP ：https://github.com/apache/skywalking/releases/tag/v8.9.1
