@@ -26,48 +26,48 @@ categories: skywalking
    1. 下载 SkyWalking Java Agent：https://archive.apache.org/dist/skywalking/java-agent/8.10.0/apache-skywalking-java-agent-8.10.0.tgz
 
 
-   2. 将agnet包解压安装到Java应用所在服务器，如下：
+      2. 将agnet包解压安装到Java应用所在服务器，如下：
 
-      ```shell
-      [root@xxx skywalking-agent]# pwd
-      /software/skywalking/skywalking-agent
-      [root@xxx skywalking-agent]#
-      [root@xxx skywalking-agent]# ll
-      total 19952
-      drwxr-xr-x 2 501 games     4096 Mar 10 14:51 activations
-      drwxr-xr-x 2 501 games      131 Mar 10 14:51 bootstrap-plugins
-      drwxr-xr-x 2 501 games       26 Mar 10 14:51 config
-      -rw-r--r-- 1 501 games    12911 Apr 12  2022 LICENSE
-      drwxr-xr-x 2 501 games       29 Mar 10 14:51 licenses
-      drwxr-xr-x 2 501 games        6 Apr 12  2022 logs
-      -rw-r--r-- 1 501 games    10003 Apr 12  2022 NOTICE
-      drwxr-xr-x 2 501 games     4096 Mar 10 14:51 optional-plugins
-      drwxr-xr-x 2 501 games      131 Apr 12  2022 optional-reporter-plugins
-      drwxr-xr-x 2 501 games     8192 Mar 10 14:51 plugins
-      -rw-r--r-- 1 501 games 20378894 Apr 12  2022 skywalking-agent.jar
-      ```
+         ```shell
+         [root@xxx skywalking-agent]# pwd
+         /software/skywalking/skywalking-agent
+         [root@xxx skywalking-agent]#
+         [root@xxx skywalking-agent]# ll
+         total 19952
+         drwxr-xr-x 2 501 games     4096 Mar 10 14:51 activations
+         drwxr-xr-x 2 501 games      131 Mar 10 14:51 bootstrap-plugins
+         drwxr-xr-x 2 501 games       26 Mar 10 14:51 config
+         -rw-r--r-- 1 501 games    12911 Apr 12  2022 LICENSE
+         drwxr-xr-x 2 501 games       29 Mar 10 14:51 licenses
+         drwxr-xr-x 2 501 games        6 Apr 12  2022 logs
+         -rw-r--r-- 1 501 games    10003 Apr 12  2022 NOTICE
+         drwxr-xr-x 2 501 games     4096 Mar 10 14:51 optional-plugins
+         drwxr-xr-x 2 501 games      131 Apr 12  2022 optional-reporter-plugins
+         drwxr-xr-x 2 501 games     8192 Mar 10 14:51 plugins
+         -rw-r--r-- 1 501 games 20378894 Apr 12  2022 skywalking-agent.jar
+         ```
 
-      
+         
 
-   3. 通过环境变量，进行基本配置如下，更多配置可以参考：`/software/skywalking/skywalking-agent/config/agent.config`
+      3. 通过环境变量，进行基本配置如下，更多配置可以参考：`/software/skywalking/skywalking-agent/config/agent.config`
 
-      ```shell
-      # SkyWalking Agent 配置
-      export SW_AGENT_NAME=sharesevice # 配置 Agent 名字。一般来说，我们直接使用 Spring Boot 项目的 `spring.application.name` 。
-      export SW_AGENT_COLLECTOR_BACKEND_SERVICES=127.0.0.1:11800 # 配置 Collector 地址，一般由业务中台提供
-      export JAVA_AGENT=-javaagent:/software/skywalking/skywalking-agent/skywalking-agent.jar # SkyWalking Agent jar 地址。
-      
-      # Jar 启动
-      java -jar $JAVA_AGENT -jar shareservice.jar
-      ```
+         ```shell
+         # SkyWalking Agent 配置
+         export SW_AGENT_NAME=sharesevice # 配置 Agent 名字。一般来说，我们直接使用 Spring Boot 项目的 `spring.application.name` 。
+         export SW_AGENT_COLLECTOR_BACKEND_SERVICES=127.0.0.1:11800 # 配置 Collector 地址，一般由业务中台提供
+         export JAVA_AGENT=-javaagent:/software/skywalking/skywalking-agent/skywalking-agent.jar # SkyWalking Agent jar 地址。
+         
+         # Jar 启动
+         java -jar $JAVA_AGENT -jar shareservice.jar
+         ```
 
-      
+         
 
-   4.  启动后可查看日志 `/software/skywalking/skywalking-agent/logs/skywalking-api.log` ，触发业务调用后可在业务中前端查看相关监控信息
+      4. 启动后可查看日志 `/software/skywalking/skywalking-agent/logs/skywalking-api.log` ，触发业务调用后可在业务中前端查看相关监控信息
 
-      
+   
 
-1. ####  定制化Tag
+3. ####  定制化Tag
 
    - 什么是Tag（标签）？
 
@@ -77,11 +77,11 @@ categories: skywalking
 
      - **application-toolkit-trace**。 需要对应用代码进行简单修改，包括注解和源代码两种方式。可参考：https://skywalking.apache.org/docs/skywalking-java/v8.9.0/en/setup/service-agent/java-agent/application-toolkit-trace/
 
-       <p style="color: red; font-weight: bold;">**注意：采用这类实现机制需要启用自定义增强插件，如果不做，将看不到增强信息。自定义增强插件即 apm-customize-enhance-plugin-8.10.0.jar 。这个官方插件的作用是使探针可以收集到@Trace之类自定义增加的注解。其位于agent目录中的optional-plugins目录中,需要将其拷贝至plugins目录!**</p>
+       <p style="color: red; font-weight: bold;">注意：采用这类实现机制需要启用自定义增强插件，如果不做，将看不到增强信息。自定义增强插件即 apm-customize-enhance-plugin-8.10.0.jar 。这个官方插件的作用是使探针可以收集到@Trace之类自定义增加的注解。其位于agent目录中的optional-plugins目录中,需要将其拷贝至plugins目录!</p>
 
          以下为采用注解方式示例：
 
-       1.  在被采集的应用中增加依赖，pom.xml如下:
+       1. 在被采集的应用中增加依赖，pom.xml如下:
 
           ```java
           <dependency>
@@ -93,7 +93,7 @@ categories: skywalking
 
           
 
-       2.  在业务服务的代码中，使用**@Trace**、**@Tags**、**@****Tag**注解，自定义需要采集的信息，如下：**
+       2. 在业务服务的代码中，使用**@Trace**、**@Tags**、**@****Tag**注解，自定义需要采集的信息，如下：**
      
           ```java
           @Trace(operationName = "setSeq")
@@ -109,16 +109,16 @@ categories: skywalking
 
           
 
-       3.  为了在Skywalking服务端界面中可以用Tag搜索，需要在Skywalking服务端config/application.yml文件中，在searchableTracesTags配置的tag列表中增加以上自定义的Tag名，如下图。然后重启Skywalking服务端。
+       3. 为了在Skywalking服务端界面中可以用Tag搜索，需要在Skywalking服务端config/application.yml文件中，在searchableTracesTags配置的tag列表中增加以上自定义的Tag名，如下图。然后重启Skywalking服务端。
 
-          ![img](https://nhegc93vpd.feishu.cn/space/api/box/stream/download/asynccode/?code=ZTI2YWIzNzA2YTYzNzZkZTgxOTIzY2Y1OGZjYzdhZGZfeUZWd0o5Y04wS1FMeXBYMXRZMFJsT3Q1MUExOWxjVm5fVG9rZW46Ym94Y243eGNtNEtuZjdFUHFYT3ozSFFhRzFnXzE3MzI3ODUyODM6MTczMjc4ODg4M19WNA)
+          ![](bullet.png)
 
-       4.  重启业务服务，并发起调用，在业务中台可查看监控界面可以看到如下信息，且能通过自定义的Tag搜索
+       4. 重启业务服务，并发起调用，在业务中台可查看监控界面可以看到如下信息，且能通过自定义的Tag搜索
 
-          ![img](https://nhegc93vpd.feishu.cn/space/api/box/stream/download/asynccode/?code=MDY4MmU1Mzg0ZjdhYTY0ZWNiZDgwMzJmODc0YzRhZTlfbUVXN2I1NEd6WXlMbFQ1TzVGNGhZb3p0VUFlRXlBN0tfVG9rZW46Ym94Y244TGdkd0l3WFNzWUpETW95THhtYkpiXzE3MzI3ODUyODM6MTczMjc4ODg4M19WNA)
+          ![](../../../../assets/images/2024-11-28-skywalking服务监控接入/tag-2.png)
 
-       ![img](https://nhegc93vpd.feishu.cn/space/api/box/stream/download/asynccode/?code=NmMwODIzMzA4MjIzMjI2ODQxM2VlMTNiMjFkMDhmYTVfYlgzSFdURlRLVWY1ck5VMTh2clMyUm4zRUtMV2FjVWFfVG9rZW46Ym94Y25CR0gxQkl0R2NROTFiMVRXTGt0QXdnXzE3MzI3ODUyODM6MTczMjc4ODg4M19WNA)
-
+          ![](../../../../assets/images/2024-11-28-skywalking服务监控接入/tag-3.png)
+     
        <p style="color: red; font-weight: bold;">以上注解方式存在的缺点：通过@Trace注解虽然能达到效果，但在调用链路会多一层，如上面的 setSeq。</p>
      
        以下为采用修改应用源代码方式示例：
@@ -136,10 +136,10 @@ categories: skywalking
           ```
        2. 重启应用服务发起业务调用，在业务中台可查看监控效果如下：
 
-          ![img](https://nhegc93vpd.feishu.cn/space/api/box/stream/download/asynccode/?code=MGIzNzJlOGY2NjdmNjMyYjM4MjMzODZiNWE3NzQwZTRfeW1kMmExakZMbGdpVmJRd3VJbHRMZk5DRFFzR1YxQUpfVG9rZW46Ym94Y25JQnJSd0ZnNGVHYXRKeWczTVZ5Q1lSXzE3MzI3ODUyODM6MTczMjc4ODg4M19WNA)
+          ![](../../../../assets/images/2024-11-28-skywalking服务监控接入/tag-4.png)
 
-          ![img](https://nhegc93vpd.feishu.cn/space/api/box/stream/download/asynccode/?code=YjU5MGE1MDlhNDgxMzU2YTBmNTQ5OWRhYTVmZmRhYjBfTmpyR2FHU212b2tCN3RtUzF6Q292MGk0b1BTU2ZQTzBfVG9rZW46Ym94Y25KZDRVaHJ5cG8xamV4QnNPZDZNcXVjXzE3MzI3ODUyODM6MTczMjc4ODg4M19WNA)
-
+          ![](../../../../assets/images/2024-11-28-skywalking服务监控接入/tag-5.png)
+     
        
      
      - **customize-enhance-trace** 。通过使用插件，完全不修改代码。可参考https://skywalking.apache.org/docs/skywalking-java/v8.9.0/en/setup/service-agent/java-agent/customize-enhance-trace 以上两种方式都需要修改源代码，存在侵入性。 还可以通过插件+配置方式，达到完全的零侵入性。
@@ -148,7 +148,7 @@ categories: skywalking
      
        2.  指定该插件的配置文件。在skywalking-agent目录下，将config/agent.config文件中，新增**plugin.customize.enhance_file** 属性，指向该插件配置文件的绝对路径。
      
-       3.  新建该插件配置文件customize_enhance_trace.xml
+       3. 新建该插件配置文件customize_enhance_trace.xml
      
           ```xml
           <?xml version="1.0" encoding="UTF-8"?>
@@ -163,4 +163,6 @@ categories: skywalking
      
           
      
+          
+       
        4.  最终效果与采用修改应用源代码方式相同（**此处自行验证未通过，待查明原因？**）

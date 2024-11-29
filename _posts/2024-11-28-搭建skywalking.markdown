@@ -56,7 +56,7 @@ drwxr-xr-x 2 501 games     8192 Mar 10 14:51 plugins
 
 1. 配置 /apache-skywalking-apm-bin/config/application.yml
 
-![img](https://nhegc93vpd.feishu.cn/space/api/box/stream/download/asynccode/?code=MjA5MDc2ZDJkNWU3YTNkYjI4OWQ5Y2IzYzA1YWIzZDdfQXpDVUM3bjFHZXlQOW11VDVRVkhmMEJSZU9ZUGlIVHFfVG9rZW46Ym94Y25ZbGluVXF1c3NOMnFKMFR2Q05kRGxmXzE3MzI2NzI4OTc6MTczMjY3NjQ5N19WNA)
+   ![](../../../../../assets/images/2024-11-28-搭建skywalking/sky-1.PNG)
 
 1. 启动 SkyWalking OAP 服务
 
@@ -108,7 +108,7 @@ SkyWalking Web Application started successfully!
 
 考虑到偶尔我们需要在 IDE 中，也希望使用 SkyWalking Agent，可参考下图配置：
 
-![img](https://nhegc93vpd.feishu.cn/space/api/box/stream/download/asynccode/?code=N2I5OWE2NDk1YzU2NmIwNzgyN2RhYmViOTBiYmI1NDlfMGI3bk9SR0F1QTBmc0FIVjh2WlFTRFZ4UW1zd2VzMWpfVG9rZW46Ym94Y25FVWNrd3NaYXZsVjhYSkRaaEJXclZlXzE3MzI2NzI4OTc6MTczMjY3NjQ5N19WNA)
+![](../../../../../assets/images/2024-11-28-搭建skywalking/sky-2.png)
 
 ## SkyWalking 修改前端源码后重新发布前端包步骤
 
@@ -119,20 +119,26 @@ github地址
 8.0+版本：https://github.com/apache/skywalking-rocketbot-ui
 
 1. 在webstorm进行二次开发
+
 2. npm run build进行构建
+
 3. 将构建好的dist/目录内容替换skywalking-[webapp](https://so.csdn.net/so/search?q=webapp&spm=1001.2101.3001.7020).jar 中\BOOT-INF\classes\public 下的内容
+
 4. 解压等相关命令
 
-```JSON
-// 将原jar包解压
-jar xf skywalking-webapp.jar
-// 重新打包
-jar cf0M skywalking-webapp.jar *
-// 检测jar包
-java -jar skywalking-webapp.jar
-// 修改权限
-chown -R 1001:1002 skywalking-webapp.jar
-```
+   ```sh
+   // 将原jar包解压
+   jar xf skywalking-webapp.jar
+   // 重新打包
+   jar cf0M skywalking-webapp.jar *
+   // 检测jar包
+   java -jar skywalking-webapp.jar
+   // 修改权限
+   chown -R 1001:1002 skywalking-webapp.jar
+   ```
 
-1. 在机器上，先kill掉原来的skywalking-webapp.jar包进程，将新打包的skywalking-webapp.jar包替换掉
-2. 在/bin目录，sh webappService.sh 启动skywalking-webapp.jar包。
+   
+
+5. 在机器上，先kill掉原来的skywalking-webapp.jar包进程，将新打包的skywalking-webapp.jar包替换掉
+
+6. 在/bin目录，sh webappService.sh 启动skywalking-webapp.jar包。
