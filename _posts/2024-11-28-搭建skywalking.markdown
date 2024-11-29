@@ -56,7 +56,7 @@ drwxr-xr-x 2 501 games     8192 Mar 10 14:51 plugins
 
 1. 配置 /apache-skywalking-apm-bin/config/application.yml
 
-   ![](../../../../../assets/images/2024-11-28-搭建skywalking/sky-1.PNG)
+   ![](../../../../../assets/images/2024-11-28-搭建skywalking/sky-1.png)
 
 1. 启动 SkyWalking OAP 服务
 
